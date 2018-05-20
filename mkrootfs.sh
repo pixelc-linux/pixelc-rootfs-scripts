@@ -116,26 +116,22 @@ run_stage() {
     STAGE="$1"
     PREVSTAGE="$2"
     USER="$3"
-    DIR="./distros/${MKROOTFS_SCRIPT_DIR}/${STAGE}"
+    SCRIPT="./distros/${MKROOTFS_SCRIPT_DIR}/${STAGE}.sh"
     if [ -n "$PREVSTAGE" ]; then
         check_stage "$STAGE" "$PREVSTAGE"
     fi
-    if [ ! -d "$DIR" ]; then
-        DIR="./distros/fallback/${STAGE}"
+    if [ ! -f "$SCRIPT" ]; then
+        SCRIPT="./distros/fallback/${STAGE}.sh"
     fi
-    if [ -d "$DIR" ]; then
-        for script in "${DIR}/*"; do
-            if [ "$USER" = "root" ]; then
-                "${DIR}/${script}"
-            else
-                sudo -E -u "$USER" -g "$MKROOTFS_GROUP" "${DIR}/${script}"
-            fi
-            EXITCODE=$?
-            if [ $EXITCODE -ne 0 ]; then
-                echo "Script '$script' failed, exitting..."
-                exit $EXITCODE
-            fi
-        fi
+    if [ "$USER" = "root" ]; then
+        "${SCRIPT}"
+    else
+        sudo -E -u "$USER" -g "$MKROOTFS_GROUP" "${SCRIPT}"
+    fi
+    EXITCODE=$?
+    if [ $EXITCODE -ne 0 ]; then
+        echo "Script '$script' failed, exitting..."
+        exit $EXITCODE
     fi
     # only stages <= configure are ever "done"
     if [ "$(echo $STAGE | cut -d - -f 1)" -le "04" ]; then
