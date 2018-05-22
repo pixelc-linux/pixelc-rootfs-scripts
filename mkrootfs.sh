@@ -19,7 +19,8 @@ export MKROOTFS_TARGET_ARCH="aarch64"
 export MKROOTFS_USER=""
 export MKROOTFS_GROUP=""
 
-MKROOTFS_DISTRO=""
+export MKROOTFS_DISTRO=""
+
 MKROOTFS_STAGE=""
 MKROOTFS_SHELL=
 MKROOTFS_QEMU="qemu-aarch64-static"
@@ -43,7 +44,7 @@ help() {
 
 while getopts d:u:g:s:Sh OPT; do
     case $OPT in
-        d) MKROOTFS_DISTRO=$OPTARG ;;
+        d) export MKROOTFS_DISTRO=$OPTARG ;;
         u) export MKROOTFS_USER=$OPTARG ;;
         g) export MKROOTFS_GROUP=$OPTARG ;;
         s) MKROOTFS_STAGE=$OPTARG ;;
@@ -65,14 +66,14 @@ if [ "$MKROOTFS_USER" = "root" ]; then
     exit 1
 fi
 
-id "$MKROOTFS_USER" 2>&1 > /dev/null
+id "$MKROOTFS_USER" > /dev/null 2>&1
 if [ $? -ne 0 ]; then
     echo "Unprivileged user does not exist, exitting..."
     help
     exit 1
 fi
 
-getent group "$MKROOTFS_GROUP" 2>&1 > /dev/null
+getent group "$MKROOTFS_GROUP" > /dev/null 2>&1
 if [ $? -ne 0 ]; then
     echo "Group does not exist, exitting..."
     help
@@ -86,6 +87,8 @@ if [ ! -f "./distros/${MKROOTFS_DISTRO}.sh" ]; then
 fi
 
 # prepare env
+
+export MKROOTFS_GENERATED="./generated/${MKROOTFS_DISTRO}"
 
 fetch_qemu() {
     echo "Interpreter '$MKROOTFS_QEMU' not found, downloading..."
@@ -142,7 +145,7 @@ fetch_qemu() {
     as_user rm -rf "$TMPDIR"
 }
 
-as_user mkdir -p "generated/${MKROOTFS_DISTRO}"
+as_user mkdir -p "${MKROOTFS_GENERATED}"
 as_user mkdir -p "bin"
 
 if [ ! -f "bin/qemu-aarch64-static" ] && \
@@ -171,14 +174,14 @@ fi
 # stage functions
 
 check_stage() {
-    STAGE="$(echo $1 | sed 's/..\-//')"
-    PREVSTAGE="$(echo $2 | sed 's/..\-//')"
-    if [ ! -f "generated/${MKROOTFS_DISTRO}/.stage" ]; then
-        echo "Stage '$STAGE' depends on '$PREVSTAGE' but" \
+    STAGENAME="$(echo $1 | sed 's/..\-//')"
+    PREVSTAGENAME="$(echo $2 | sed 's/..\-//')"
+    if [ ! -f "${MKROOTFS_GENERATED}/.stage" ]; then
+        echo "Stage '$STAGENAME' depends on '$PREVSTAGENAME' but" \
              "nothing was run, exitting..."
         exit 1
     fi
-    CURPREVSTAGE="$(cat '.generated/${MKROOTFS_DISTRO}/.stage')"
+    CURPREVSTAGE="$(cat ${MKROOTFS_GENERATED}/.stage)"
     CURPREVSTAGENAME="$(echo $CURPREVSTAGE | sed 's/..\-//')"
     if [ "$CURPREVSTAGE" != "$2" ]; then
         echo "Stage '$STAGE' depends on '$PREVSTAGE' but previous stage" \
@@ -198,6 +201,7 @@ run_stage() {
     if [ ! -f "$SCRIPT" ]; then
         SCRIPT="./distros/fallback/${STAGE}.sh"
     fi
+    echo "Running stage '${STAGE}' (${SCRIPT})..."
     if [ "$USER" = "root" ]; then
         "${SCRIPT}"
     else
@@ -208,17 +212,18 @@ run_stage() {
         echo "Stage '$(echo $STAGE | sed 's/..\-//')' failed, exitting..."
         exit $EXITCODE
     fi
+    echo "Stage '${STAGE}' succeeded."
     # only stages <= configure are ever "done"
     if [ "$(echo $STAGE | cut -d - -f 1)" -le "04" ]; then
         echo "$STAGE" | \
-            as_user dd of="generated/${MKROOTFS_DISTRO}/.stage" status=none
+            as_user dd of="${MKROOTFS_GENERATED}/.stage" status=none
     fi
 }
 
 # decide stages
 
 if [ -z "$MKROOTFS_STAGE" ]; then
-    rm -rf "generated/${MKROOTFS_DISTRO}/*"
+    rm -rf "${MKROOTFS_GENERATED}/*"
     run_stage "01-download"   ""              "$MKROOTFS_USER"
     run_stage "02-bootstrap1" "01-download"   "root"
     run_stage "03-bootstrap2" "02-bootstrap1" "root"
