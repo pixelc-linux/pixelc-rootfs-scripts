@@ -58,23 +58,21 @@ switch_dir() {
 MKROOTFS_CLEANUP_FUNCS=""
 cleanup_cb() {
     for func in $(echo $MKROOTFS_CLEANUP_FUNCS | tr ';' ' '); do
-        eval "$x"
+        eval "$func"
     done
 }
 trap cleanup_cb EXIT INT QUIT ABRT TERM
 
 append_cleanup() {
-    echo "$MKROOTFS_CLEANUP_FUNCS"
-    if [ -n "$1" ]; then
-        MKROOTFS_CLEANUP_FUNCS="${MKROOTFS_CLEANUP_FUNCS};$1"
-    fi
+    MKROOTFS_CLEANUP_FUNCS="${MKROOTFS_CLEANUP_FUNCS};$1"
 }
 
 prepend_cleanup() {
+    MKROOTFS_CLEANUP_FUNCS="$1;${MKROOTFS_CLEANUP_FUNCS}"
+}
+
+save_cleanup() {
     echo "$MKROOTFS_CLEANUP_FUNCS"
-    if [ -n "$1" ]; then
-        MKROOTFS_CLEANUP_FUNCS="$1;${MKROOTFS_CLEANUP_FUNCS}"
-    fi
 }
 
 restore_cleanup() {

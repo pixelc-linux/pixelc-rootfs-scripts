@@ -8,7 +8,7 @@ stage_log "preparing initial rootfs..."
 
 make_rootfs
 
-echo "Copying signing keys..."
+stage_sublog "copying signing keys..."
 cp -R xbps/var "$MKROOTFS_ROOT_DIR" || die_log "could not copy signing keys"
 
 stage_sublog "downloading packages..."
@@ -16,7 +16,8 @@ stage_sublog "downloading packages..."
 cleanup_root() {
     rm -rf "$MKROOTFS_ROOT_DIR"
 }
-CLEANUP_OLD=$(append_cleanup cleanup_root)
+CLEANUP_OLD=$(save_cleanup)
+append_cleanup cleanup_root
 
 # stage 1: download stuff, no need to configure
 XBPS_TARGET_ARCH="${MKROOTFS_VOID_ARCH}" ./xbps/usr/bin/xbps-install \

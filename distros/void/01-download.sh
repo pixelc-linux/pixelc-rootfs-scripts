@@ -17,7 +17,8 @@ fetch_file "$XBPS_URL" "$XBPS_ARCHIVE" || \
 xbps_cleanup_archive() {
     rm -f "$XBPS_ARCHIVE"
 }
-CLEANUP_OLD=$(append_cleanup xbps_cleanup)
+CLEANUP_OLD=$(save_cleanup)
+append_cleanup xbps_cleanup_archive
 
 stage_sublog "extracting xbps..."
 
@@ -33,8 +34,7 @@ prepend_cleanup xbps_cleanup_dir
 
 tar xf "../${XBPS_ARCHIVE}" || die_log "unpacking xbps failed"
 
-test -x "xbps/usr/bin/xbps-install.static" || \
-    die_log "invalid xbps contents"
+test -x "usr/bin/xbps-install.static" || die_log "invalid xbps contents"
 
 stage_sublog "cleaning up..."
 
