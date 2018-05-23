@@ -2,7 +2,6 @@
 
 # include utils
 . ./utils.sh
-
 test "$(whoami)" = "root" || die_log "must be run as root"
 test -x "$(command -v sudo)" || die_log "sudo not found"
 test -x "$(command -v wget)" || die_log "wget not found"
@@ -54,7 +53,7 @@ done
 
 # sanitize beforehand
 
-test "$MKROOTFS_USER" != "root" ]; then
+if [ "$MKROOTFS_USER" == "root" ]; then
     error_log "unprivileged user must not be root"
     help
     exit 1

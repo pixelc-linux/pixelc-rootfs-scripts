@@ -36,8 +36,8 @@ error_log() {
 
 die_log() {
     error_log "$1"
-    if [ -n "$2"]; then
-        exit "$2"
+    if [ $# -gt 1 ]; then
+        exit $2
     else
         exit 1
     fi
