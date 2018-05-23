@@ -136,8 +136,6 @@ then
     fi
     as_user chmod 755 "bin/$MKROOTFS_QEMU" ||
         die_log "could not set qemu permissions"
-    as_user cp "bin/$MKROOTFS_QEMU" "$MKROOTFS_GENERATED" ||
-        die_log "could not copy qemu to generated directory"
 fi
 
 # export environment for the distro

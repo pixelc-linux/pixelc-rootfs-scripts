@@ -11,6 +11,6 @@ prepare_binfmt
 register_binfmt
 mount_pseudo
 
-echo "5: Configuring packages for target..."
+echo "Configuring packages for target..."
 in_rootfs /usr/bin/xbps-reconfigure -f -a || \
     die_log "failed configuring packages"

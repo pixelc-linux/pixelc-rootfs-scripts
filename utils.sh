@@ -73,31 +73,38 @@ export MKROOTFS_BINFMT_MAGIC="\x7fELF\x02\x01\x01\x00\x00\x00\x00\x00\x00\x00\x0
 export MKROOTFS_BINFMT_MASK="\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff"
 
 register_binfmt() {
-    echo "Registering binary format..."
-    test -d "/proc/sys/fs/binfmt_misc" || \
-        die_log "no binfmt_misc support in your kernel"
-    if [ ! -f "/proc/sys/fs/binfmt_misc/register" ]; then
-        mount -t binfmt_misc none /proc/sys/fs/binfmt_misc || \
-            die_log "could not mount binfmt_misc"
-        append_cleanup unregister_binfmt
-    fi
-    if [ ! -f "/proc/sys/fs/binfmt_misc/${MKROOTFS_BINFMT_NAME}" ]; then
-        echo ":${MKROOTFS_BINFMT_NAME}:M::${MKROOTFS_BINFMT_MAGIC}:${MKROOTFS_BINFMT_MASK}:/${MKROOTFS_QEMU}:" \
-            > /proc/sys/fs/binfmt_misc/register
-        if [ $? -ne 0 ]; then
-            die_log "binfmt registration failed"
+    if [ "$MKROOTFS_TARGET_ARCH" != "$MKROOTFS_CURRENT_ARCH" ]; then
+        echo "Registering binary format..."
+        test -d "/proc/sys/fs/binfmt_misc" || \
+            die_log "no binfmt_misc support in your kernel"
+        if [ ! -f "/proc/sys/fs/binfmt_misc/register" ]; then
+            mount -t binfmt_misc none /proc/sys/fs/binfmt_misc || \
+                die_log "could not mount binfmt_misc"
+            append_cleanup unregister_binfmt
+        fi
+        if [ ! -f "/proc/sys/fs/binfmt_misc/${MKROOTFS_BINFMT_NAME}" ]; then
+            echo ":${MKROOTFS_BINFMT_NAME}:M::${MKROOTFS_BINFMT_MAGIC}:${MKROOTFS_BINFMT_MASK}:/${MKROOTFS_QEMU}:" \
+                > /proc/sys/fs/binfmt_misc/register
+            if [ $? -ne 0 ]; then
+                die_log "binfmt registration failed"
+            fi
         fi
     fi
 }
 
 unregister_binfmt() {
-    if [ -f "/proc/sys/fs/binfmt_misc/${MKROOTFS_BINFMT_NAME}" ]; then
-        echo -1 > "/proc/sys/fs/binfmt_misc/${MKROOTFS_BINFMT_NAME}"
+    if [ "$MKROOTFS_TARGET_ARCH" != "$MKROOTFS_CURRENT_ARCH" ]; then
+        if [ -f "/proc/sys/fs/binfmt_misc/${MKROOTFS_BINFMT_NAME}" ]; then
+            echo -1 > "/proc/sys/fs/binfmt_misc/${MKROOTFS_BINFMT_NAME}"
+        fi
     fi
 }
 
 prepare_binfmt() {
-    cp "$MKROOTFS_QEMU" "$MKROOTFS_ROOT_DIR" || die_log "could not copy qemu"
+    if [ "$MKROOTFS_TARGET_ARCH" != "$MKROOTFS_CURRENT_ARCH" ]; then
+        cp "../../bin/$MKROOTFS_QEMU" "$MKROOTFS_ROOT_DIR" || \
+            die_log "could not copy qemu"
+    fi
 }
 
 mount_pseudo() {
