@@ -2,14 +2,6 @@
 
 . ./utils.sh
 
-if [ ! -f "${MKROOTFS_GENERATED}/${MKROOTFS_QEMU}" ]; then
-    as_user cp "bin/$MKROOTFS_QEMU" "$MKROOTFS_GENERATED"
-    if [ $? -ne 0 ]; then
-        echo "Could not copy qemu interpreter, exitting..."
-        exit 1
-    fi
-fi
-
 switch_dir
 
 XBPS_ARCHIVE="xbps-static-latest.$(uname -m)-musl.tar.xz"
@@ -17,43 +9,31 @@ XBPS_URL="http://repo.voidlinux.eu/static/${XBPS_ARCHIVE}"
 
 echo "Fetching xbps..."
 
-fetch_file "$XBPS_URL" "$XBPS_ARCHIVE"
-if [ $? -ne 0 ]; then
-    echo "Could not fetch xbps for $(uname -m), exitting..."
-    exit 1
-fi
+fetch_file "$XBPS_URL" "$XBPS_ARCHIVE" || \
+    die_log "could not fetch xbps for $(uname -m)"
 
-as_user rm -rf xbps
-if [ $? -ne 0 ]; then
-    echo "Xbps directory cleanup failed, exitting..."
+xbps_cleanup_archive() {
     rm -f "$XBPS_ARCHIVE"
-    exit 1
-fi
+}
+CLEANUP_OLD=$(append_cleanup xbps_cleanup)
 
-as_user mkdir xbps
-if [ $? -ne 0 ]; then
-    echo "Xbps directory creation failed, exitting..."
-    rm -f "$XBPS_ARCHIVE"
-    exit 1
-fi
+as_user rm -rf xbps || die_log "xbps directory cleanup failed"
+as_user mkdir xbps  || die_log "xbps directory creation failed"
 
 cd xbps
-tar xf "../${XBPS_ARCHIVE}"
-if [ $? -ne 0 ]; then
-    echo "Unpacking xbps failed, exitting..."
+xbps_cleanup_dir() {
     cd ..
     rm -rf xbps
-    rm -f "$XBPS_ARCHIVE"
-    exit 1
-fi
-cd ..
+}
+prepend_cleanup xbps_cleanup_dir
 
-if [ ! -x "xbps/usr/bin/xbps-install.static" ]; then
-    echo "Invalid xbps contents, exitting..."
-    cd ..
-    rm -rf xbps
-    rm -f "$XBPS_ARCHIVE"
-    exit 1
-fi
+tar xf "../${XBPS_ARCHIVE}" || die_log "unpacking xbps failed"
+
+test -x "xbps/usr/bin/xbps-install.static" || \
+    die_log "invalid xbps contents"
+
+restore_cleanup "$CLEANUP_OLD"
+cd ..
+rm -f "$XBPS_ARCHIVE"
 
 exit 0

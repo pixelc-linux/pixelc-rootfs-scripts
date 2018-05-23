@@ -17,6 +17,19 @@ get_arch() {
     esac
 }
 
+error_log() {
+    echo "ERROR: $@, exitting..."
+}
+
+die_log() {
+    error_log "$1"
+    if [ -n "$2"]; then
+        exit "$2"
+    else
+        exit 1
+    fi
+}
+
 fetch_file() {
     as_user wget "$1" -O "$2"
 }
@@ -26,11 +39,33 @@ fetch_file_root() {
 }
 
 switch_dir() {
-    cd "$MKROOTFS_GENERATED"
-    if [ $? -ne 0 ]; then
-        echo "Could not switch directory, exitting..."
-        exit 1
+    cd "$MKROOTFS_GENERATED" || die_log "could not switch directory"
+}
+
+MKROOTFS_CLEANUP_FUNCS=""
+cleanup_cb() {
+    for func in $(echo $MKROOTFS_CLEANUP_FUNCS | tr ';' ' '); do
+        eval "$x"
+    done
+}
+trap cleanup_cb EXIT INT QUIT ABRT TERM
+
+append_cleanup() {
+    echo "$MKROOTFS_CLEANUP_FUNCS"
+    if [ -n "$1" ]; then
+        MKROOTFS_CLEANUP_FUNCS="${MKROOTFS_CLEANUP_FUNCS};$1"
     fi
+}
+
+prepend_cleanup() {
+    echo "$MKROOTFS_CLEANUP_FUNCS"
+    if [ -n "$1" ]; then
+        MKROOTFS_CLEANUP_FUNCS="$1;${MKROOTFS_CLEANUP_FUNCS}"
+    fi
+}
+
+restore_cleanup() {
+    MKROOTFS_CLEANUP_FUNCS="$1"
 }
 
 export MKROOTFS_BINFMT_NAME="mkrootfs-aarch64"
@@ -38,23 +73,19 @@ export MKROOTFS_BINFMT_MAGIC="\x7fELF\x02\x01\x01\x00\x00\x00\x00\x00\x00\x00\x0
 export MKROOTFS_BINFMT_MASK="\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff"
 
 register_binfmt() {
-    if [ ! -d "/proc/sys/fs/binfmt_misc" ]; then
-        echo "No binfmt_misc support in your kernel, exitting..."
-        exit 1
-    fi
+    echo "Registering binary format..."
+    test -d "/proc/sys/fs/binfmt_misc" || \
+        die_log "no binfmt_misc support in your kernel"
     if [ ! -f "/proc/sys/fs/binfmt_misc/register" ]; then
-        mount -t binfmt_misc none /proc/sys/fs/binfmt_misc
-        if [ $? -ne 0 ]; then
-            echo "Could not mount binfmt_misc, exitting..."
-            exit 1
-        fi
+        mount -t binfmt_misc none /proc/sys/fs/binfmt_misc || \
+            die_log "could not mount binfmt_misc"
+        append_cleanup unregister_binfmt
     fi
     if [ ! -f "/proc/sys/fs/binfmt_misc/${MKROOTFS_BINFMT_NAME}" ]; then
         echo ":${MKROOTFS_BINFMT_NAME}:M::${MKROOTFS_BINFMT_MAGIC}:${MKROOTFS_BINFMT_MASK}:/${MKROOTFS_QEMU}:" \
             > /proc/sys/fs/binfmt_misc/register
         if [ $? -ne 0 ]; then
-            echo "Binfmt registration failed, exitting..."
-            exit 1
+            die_log "binfmt registration failed"
         fi
     fi
 }
@@ -65,15 +96,34 @@ unregister_binfmt() {
     fi
 }
 
+prepare_binfmt() {
+    cp "$MKROOTFS_QEMU" "$MKROOTFS_ROOT_DIR" || die_log "could not copy qemu"
+}
+
 mount_pseudo() {
+    echo "Mounting pseudo-filesystems..."
     mkdir -p "$1/dev" "$1/proc" "$1/sys"
     mount --bind /dev "$1/dev"
     mount --bind /sys "$1/sys"
     mount --bind /proc "$1/proc"
+    append_cleanup umount_pseudo
 }
 
 umount_pseudo() {
-    umount "$1/dev"
-    umount "$1/sys"
-    umount "$1/proc"
+    umount "$1/dev" > /dev/null 2>&1
+    umount "$1/sys" > /dev/null 2>&1
+    umount "$1/proc" > /dev/null 2>&1
+}
+
+test_rootfs() {
+    test -d "$MKROOTFS_ROOT_DIR" || die_log "root directory does not exist"
+}
+
+make_rootfs() {
+    test ! -d "$MKROOTFS_ROOT_DIR" || die_log "root directory already exists"
+    mkdir "$MKROOTFS_ROOT_DIR" || die_log "could not create root directory"
+}
+
+in_rootfs() {
+    chroot "$MKROOTFS_ROOT_DIR" "$@"
 }

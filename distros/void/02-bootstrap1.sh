@@ -6,35 +6,35 @@ switch_dir
 
 echo "Preparing initial rootfs..."
 
-if [ -d rootfs ]; then
-    echo "Rootfs dir already exists, exitting..."
-    exit 1
-fi
-
-mkdir rootfs
+make_rootfs
 
 echo "Copying signing keys..."
-cp -R xbps/var rootfs
+cp -R xbps/var "$MKROOTFS_ROOT_DIR" || die_log "could not copy signing keys"
 
 echo "Downloading packages..."
 
+cleanup_root() {
+    rm -rf "$MKROOTFS_ROOT_DIR"
+}
+CLEANUP_OLD=$(append_cleanup cleanup_root)
+
 # stage 1: download stuff, no need to configure
 XBPS_TARGET_ARCH="${MKROOTFS_VOID_ARCH}" ./xbps/usr/bin/xbps-install \
-    -S -y -R "${MKROOTFS_VOID_REPO_URL}" -r rootfs base-voidstrap
-if [ $? -ne 0 ]; then
-    echo "Initial bootstrap failed, exitting..."
-    rm -rf rootfs
-    exit 1
-fi
+    -S -y -R "${MKROOTFS_VOID_REPO_URL}" -r "$MKROOTFS_ROOT_DIR" base-voidstrap
+test $? -eq 0 || die_log "initial bootstrap failed"
 
 # glibc needs locale configured to work correctly
-if [ -e "rootfs/etc/default/libc-locales" ]; then
+if [ -e "${MKROOTFS_ROOT_DIR}/etc/default/libc-locales" ]; then
     LOCALE=en_US.UTF-8
-    sed -e "s/\#\(${LOCALE}.*\)/\1/g" -i "rootfs/etc/default/libc-locales"
+    sed -e "s/\#\(${LOCALE}.*\)/\1/g" \
+        -i "${MKROOTFS_ROOT_DIR}/etc/default/libc-locales"
 fi
 
 # stage 2. configure base-files, this will fail as a whole but will set
 # up the symlinks and other things necessary for the system to work at all
 # note how it's run as host arch
 echo "Pre-configuring base (will partially fail)..."
-./xbps/usr/bin/xbps-reconfigure -r rootfs base-files
+./xbps/usr/bin/xbps-reconfigure -r "$MKROOTFS_ROOT_DIR" base-files
+
+# keep the root dir
+restore_cleanup "$CLEANUP_OLD"

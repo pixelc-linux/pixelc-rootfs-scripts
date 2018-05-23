@@ -3,20 +3,9 @@
 # include utils
 . ./utils.sh
 
-if [ "$(whoami)" != "root" ]; then
-    echo "Must be run as root, exitting..."
-    exit 1
-fi
-
-if [ ! -x "$(command -v sudo)" ]; then
-    echo "Sudo not found, exitting..."
-    exit 1
-fi
-
-if [ ! -x "$(command -v wget)" ]; then
-    echo "Wget not found, exitting..."
-    exit 1
-fi
+test "$(whoami)" = "root" || die_log "must be run as root"
+test -x "$(command -v sudo)" || die_log "sudo not found"
+test -x "$(command -v wget)" || die_log "wget not found"
 
 export MKROOTFS_CURRENT_ARCH="$(get_arch)"
 export MKROOTFS_TARGET_ARCH="aarch64"
@@ -65,28 +54,28 @@ done
 
 # sanitize beforehand
 
-if [ "$MKROOTFS_USER" = "root" ]; then
-    echo "Unprivileged user must not be root, exitting..."
+test "$MKROOTFS_USER" != "root" ]; then
+    error_log "unprivileged user must not be root"
     help
     exit 1
 fi
 
 id "$MKROOTFS_USER" > /dev/null 2>&1
 if [ $? -ne 0 ]; then
-    echo "Unprivileged user does not exist, exitting..."
+    error_log "unprivileged user does not exist"
     help
     exit 1
 fi
 
 getent group "$MKROOTFS_GROUP" > /dev/null 2>&1
 if [ $? -ne 0 ]; then
-    echo "Group does not exist, exitting..."
+    error_log "group does not exist"
     help
     exit 1
 fi
 
 if [ ! -f "./distros/${MKROOTFS_DISTRO}.sh" ]; then
-    echo "Distro '$MKROOTFS_DISTRO' not found, exitting..."
+    error_log "distro '$MKROOTFS_DISTRO' not found"
     help
     exit 1
 fi
@@ -97,53 +86,36 @@ export MKROOTFS_GENERATED="./generated/${MKROOTFS_DISTRO}"
 
 fetch_qemu() {
     echo "Interpreter '$MKROOTFS_QEMU' not found, downloading..."
-    if [ ! -x "$(command -v wget)" ]; then
-        echo "Wget not found, exitting..."
-        exit 1
-    fi
-    if [ ! -x "$(command -v ar)" ]; then
-        echo "The 'ar' utility was not found, exitting..."
-        exit 1
-    fi
-    if [ ! -x "$(command -v tar)" ]; then
-        echo "Tar not found, exitting..."
-        exit 1
-    fi
+    test -x "$(command -v ar)" || die_log "ar not found"
+    test -x "$(command -v tar)" || die_log "tar not found"
     TMPDIR="$(as_user mktemp -d qemu-XXXXXXXX)"
-    if [ $? -ne 0 ]; then
-        echo "Couldn't create a temporary directory, exitting..."
-        exit 1
-    fi
+    test $? -eq 0 || die_log "could not create a temporary direcotry"
     cd "$TMPDIR"
     as_user wget "$QEMU_STATIC_DEB_URL"
     if [ $? -ne 0 ]; then
-        echo "Couldn't fetch the qemu package, exitting..."
         cd ..
         as_user rm -rf "$TMPDIR"
-        exit 1
+        die_log "could not fetch the qemu package"
     fi
     echo "Extracting qemu package..."
     as_user ar x "$QEMU_STATIC_DEB"
     if [ $? -ne 0 ]; then
-        echo "Couldn't extract the deb package, exitting..."
         cd ..
         as_user rm -rf "$TMPDIR"
-        exit 1
+        die_log "could not extract the deb package"
     fi
     as_user tar xf "data.tar.xz"
     if [ $? -ne 0 ]; then
-        echo "Couldn't extract the deb data, exitting..."
         cd ..
         as_user rm -rf "$TMPDIR"
-        exit 1
+        die_log "could not extract the deb data"
     fi
     echo "Copying qemu binary..."
     as_user cp "usr/bin/$MKROOTFS_QEMU" "../bin"
     if [ $? -ne 0 ]; then
-        echo "Couldn't copy the qemu binary, exitting..."
         cd ..
-        #as_user rm -rf "$TMPDIR"
-        exit 1
+        as_user rm -rf "$TMPDIR"
+        die_log "could not copy the qemu binary"
     fi
     echo "Done copying."
     cd ..
@@ -160,9 +132,12 @@ then
     if [ $? -ne 0 ]; then
         fetch_qemu
     else
-        cp "$QEMU_PATH" "bin"
+        as_user cp "$QEMU_PATH" "bin"
     fi
-    as_user chmod 755 "bin/$MKROOTFS_QEMU"
+    as_user chmod 755 "bin/$MKROOTFS_QEMU" ||
+        die_log "could not set qemu permissions"
+    as_user cp "bin/$MKROOTFS_QEMU" "$MKROOTFS_GENERATED" ||
+        die_log "could not copy qemu to generated directory"
 fi
 
 # export environment for the distro
@@ -172,8 +147,7 @@ export MKROOTFS_SCRIPT_DIR=""
 . "./distros/${MKROOTFS_DISTRO}.sh"
 
 if [ -z "$MKROOTFS_SCRIPT_DIR" ] || [ ! -d "distros/$MKROOTFS_SCRIPT_DIR" ]; then
-    echo "Distro directory not set or not found, exitting..."
-    exit 1
+    die_log "distro directory not set or not found"
 fi
 
 # stage functions
@@ -182,15 +156,15 @@ check_stage() {
     STAGENAME="$(echo $1 | sed 's/..\-//')"
     PREVSTAGENAME="$(echo $2 | sed 's/..\-//')"
     if [ ! -f "${MKROOTFS_GENERATED}/.stage" ]; then
-        echo "Stage '$STAGENAME' depends on '$PREVSTAGENAME' but" \
-             "nothing was run, exitting..."
+        error_log "stage '$STAGENAME' depends on '$PREVSTAGENAME' but" \
+             "nothing was run"
         exit 1
     fi
     CURPREVSTAGE="$(cat ${MKROOTFS_GENERATED}/.stage)"
     CURPREVSTAGENAME="$(echo $CURPREVSTAGE | sed 's/..\-//')"
     if [ "$CURPREVSTAGE" != "$2" ]; then
-        echo "Stage '$STAGE' depends on '$PREVSTAGE' but previous stage" \
-             "is '$CURPREVSTAGENAME', exitting..."
+        error_log "stage '$STAGE' depends on '$PREVSTAGE' but previous stage" \
+             "is '$CURPREVSTAGENAME'"
         exit 1
     fi
 }
@@ -212,10 +186,8 @@ run_stage() {
     else
         sudo -E -u "$USER" -g "$MKROOTFS_GROUP" "${SCRIPT}"
     fi
-    EXITCODE=$?
-    if [ $EXITCODE -ne 0 ]; then
-        echo "Stage '$(echo $STAGE | sed 's/..\-//')' failed, exitting..."
-        exit $EXITCODE
+    if [ $? -ne 0 ]; then
+        die_log "stage '$(echo $STAGE | sed 's/..\-//')' failed" $?
     fi
     echo "Stage '${STAGE}' succeeded."
     # only stages <= configure are ever "done"
@@ -257,7 +229,7 @@ case "$MKROOTFS_STAGE" in
     cleanup)
         run_stage "07-cleanup" "04-configure" "root" ;;
     *)
-        echo "Unknown stage '$MKROOTFS_STAGE', exitting..."
+        error_log "unknown stage '$MKROOTFS_STAGE'"
         help
         exit 1
 esac
