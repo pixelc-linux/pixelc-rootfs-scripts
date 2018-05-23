@@ -107,12 +107,19 @@ prepare_binfmt() {
     fi
 }
 
+unprepare_binfmt() {
+    if [ "$MKROOTFS_TARGET_ARCH" != "$MKROOTFS_CURRENT_ARCH" ]; then
+        rm -f "${MKROOTFS_ROOT_DIR}/${MKROOTFS_QEMU}"
+    fi
+}
+
 mount_pseudo() {
     echo "Mounting pseudo-filesystems..."
-    mkdir -p "$1/dev" "$1/proc" "$1/sys"
-    mount --bind /dev "$1/dev"
-    mount --bind /sys "$1/sys"
-    mount --bind /proc "$1/proc"
+    mkdir -p "${MKROOTFS_ROOT_DIR}/dev" "${MKROOTFS_ROOT_DIR}/proc" \
+        "${MKROOTFS_ROOT_DIR}/sys"
+    mount --bind /dev "${MKROOTFS_ROOT_DIR}/dev"
+    mount --bind /sys "${MKROOTFS_ROOT_DIR}/sys"
+    mount --bind /proc "${MKROOTFS_ROOT_DIR}/proc"
     append_cleanup umount_pseudo
 }
 
