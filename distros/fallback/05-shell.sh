@@ -4,7 +4,7 @@
 
 switch_dir
 
-echo "Invoking rootfs shell..."
+stage_log "invoking rootfs shell..."
 
 test_rootfs
 register_binfmt
@@ -16,4 +16,4 @@ if [ $? -eq 0 ]; then
     mkrootfs_shell_hook
 fi
 
-echo "Done with rootfs shell."
+stage_sublog "cleaning up..."

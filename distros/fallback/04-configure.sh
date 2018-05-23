@@ -1,5 +1,5 @@
 #!/bin/sh
 
-echo "Configuration stage not defined for '${MKROOTFS_DISTRO}'."
+. ./utils.sh
 
-exit 1
+die_log "configuration stage not defined for '${MKROOTFS_DISTRO}'"

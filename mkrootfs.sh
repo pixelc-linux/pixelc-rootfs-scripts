@@ -23,7 +23,7 @@ QEMU_STATIC_DEB="qemu-user-static_2.12+dfsg-1+b1_${MKROOTFS_CURRENT_ARCH}.deb"
 QEMU_STATIC_DEB_URL="http://ftp.debian.org/debian/pool/main/q/qemu/${QEMU_STATIC_DEB}"
 
 help() {
-    echo "Usage: $0 [arguments]"
+    echo "${COLOR_BOLD_WHITE}Usage: $0 [arguments]${COLOR_RESET}"
     echo "Available options:"
     echo "  -h print this message"
     echo "  -d DISTRO  the distro to generate"
@@ -178,7 +178,8 @@ run_stage() {
     if [ ! -f "$SCRIPT" ]; then
         SCRIPT="./distros/fallback/${STAGE}.sh"
     fi
-    echo "Running stage '${STAGE}' (${SCRIPT})..."
+    export MKROOTFS_STAGE="$STAGE"
+    echo "${COLOR_BOLD_GREEN}Running stage '${STAGE}' (${SCRIPT})...${COLOR_RESET}"
     if [ "$USER" = "root" ]; then
         "${SCRIPT}"
     else
@@ -187,7 +188,7 @@ run_stage() {
     if [ $? -ne 0 ]; then
         die_log "stage '$(echo $STAGE | sed 's/..\-//')' failed" $?
     fi
-    echo "Stage '${STAGE}' succeeded."
+    echo "${COLOR_BOLD_GREEN}Stage '${STAGE}' succeeded.${COLOR_RESET}"
     # only stages <= configure are ever "done"
     if [ "$(echo $STAGE | cut -d - -f 1)" -le "04" ]; then
         echo "$STAGE" | \

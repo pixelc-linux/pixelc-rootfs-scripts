@@ -1,5 +1,5 @@
 #!/bin/sh
 
-echo "Secondary bootstrap not defined for '${MKROOTFS_DISTRO}'."
+. ./utils.sh
 
-exit 1
+die_log "secondary bootstrap not defined for '${MKROOTFS_DISTRO}'"

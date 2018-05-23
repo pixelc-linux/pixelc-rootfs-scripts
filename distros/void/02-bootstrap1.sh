@@ -4,14 +4,14 @@
 
 switch_dir
 
-echo "Preparing initial rootfs..."
+stage_log "preparing initial rootfs..."
 
 make_rootfs
 
 echo "Copying signing keys..."
 cp -R xbps/var "$MKROOTFS_ROOT_DIR" || die_log "could not copy signing keys"
 
-echo "Downloading packages..."
+stage_sublog "downloading packages..."
 
 cleanup_root() {
     rm -rf "$MKROOTFS_ROOT_DIR"
@@ -33,8 +33,10 @@ fi
 # stage 2. configure base-files, this will fail as a whole but will set
 # up the symlinks and other things necessary for the system to work at all
 # note how it's run as host arch
-echo "Pre-configuring base (will partially fail)..."
+stage_sublog "pre-configuring base (will partially fail)..."
 ./xbps/usr/bin/xbps-reconfigure -r "$MKROOTFS_ROOT_DIR" base-files
+
+stage_sublog "cleaning up..."
 
 # keep the root dir
 restore_cleanup "$CLEANUP_OLD"

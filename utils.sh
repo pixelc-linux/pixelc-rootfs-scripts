@@ -17,8 +17,21 @@ get_arch() {
     esac
 }
 
+COLOR_BOLD_WHITE="\033[1;37m"
+COLOR_BOLD_GREEN="\033[1;32m"
+COLOR_BOLD_RED="\033[1;31m"
+COLOR_RESET="\033[0m"
+
+stage_log() {
+    echo "${COLOR_BOLD_WHITE}${MKROOTFS_STAGE}:${COLOR_RESET} $@"
+}
+
+stage_sublog() {
+    echo "${COLOR_BOLD_WHITE}-->${COLOR_RESET} $@"
+}
+
 error_log() {
-    echo "ERROR: $@, exitting..."
+    echo "${COLOR_BOLD_RED}ERROR:${COLOR_RESET} $@, exitting..."
 }
 
 die_log() {
@@ -74,7 +87,7 @@ export MKROOTFS_BINFMT_MASK="\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xf
 
 register_binfmt() {
     if [ "$MKROOTFS_TARGET_ARCH" != "$MKROOTFS_CURRENT_ARCH" ]; then
-        echo "Registering binary format..."
+        stage_sublog "registering binary format..."
         test -d "/proc/sys/fs/binfmt_misc" || \
             die_log "no binfmt_misc support in your kernel"
         if [ ! -f "/proc/sys/fs/binfmt_misc/register" ]; then
@@ -114,7 +127,7 @@ unprepare_binfmt() {
 }
 
 mount_pseudo() {
-    echo "Mounting pseudo-filesystems..."
+    stage_sublog "ounting pseudo-filesystems..."
     mkdir -p "${MKROOTFS_ROOT_DIR}/dev" "${MKROOTFS_ROOT_DIR}/proc" \
         "${MKROOTFS_ROOT_DIR}/sys"
     mount --bind /dev "${MKROOTFS_ROOT_DIR}/dev"

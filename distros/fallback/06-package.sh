@@ -4,14 +4,14 @@
 
 switch_dir
 
-echo "Packaging rootfs..."
+stage_log "packaging rootfs..."
 
 test_rootfs
 # just in case
 umount_pseudo
 unprepare_binfmt
 
-echo "Flushing caches and temporary directories..."
+stage_sublog "Flushing caches and temporary directories..."
 
 rm -rf "${MKROOTFS_ROOT_DIR}/var/cache"
 rm -rf "${MKROOTFS_ROOT_DIR}/var/log"
@@ -30,10 +30,11 @@ fi
 
 ROOTNAME="${MKROOTFS_DISTRO}-$(date '+%Y%m%d').tar.xz"
 
-echo "Creating archive ${ROOTNAME}..."
+stage_sublog "creating archive ${ROOTNAME}..."
 
 cd "${MKROOTFS_ROOT_DIR}" || die_log "could not enter root directory"
 
 tar cpJf "../../${ROOTNAME}" . || die_log "could not create rootfs archive"
 
-echo "Created archive: ${ROOTNAME}"
+stage_sublog "created archive: ${ROOTNAME}"
+stage_sublog "cleaning up..."
