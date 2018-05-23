@@ -13,6 +13,11 @@ if [ ! -x "$(command -v sudo)" ]; then
     exit 1
 fi
 
+if [ ! -x "$(command -v wget)" ]; then
+    echo "Wget not found, exitting..."
+    exit 1
+fi
+
 export MKROOTFS_CURRENT_ARCH="$(get_arch)"
 export MKROOTFS_TARGET_ARCH="aarch64"
 
@@ -23,7 +28,7 @@ export MKROOTFS_DISTRO=""
 
 MKROOTFS_STAGE=""
 MKROOTFS_SHELL=
-MKROOTFS_QEMU="qemu-aarch64-static"
+export MKROOTFS_QEMU="qemu-aarch64-static"
 
 QEMU_STATIC_DEB="qemu-user-static_2.12+dfsg-1+b1_${MKROOTFS_CURRENT_ARCH}.deb"
 QEMU_STATIC_DEB_URL="http://ftp.debian.org/debian/pool/main/q/qemu/${QEMU_STATIC_DEB}"
@@ -157,7 +162,7 @@ then
     else
         cp "$QEMU_PATH" "bin"
     fi
-    as_user chmod 755 "bin/$QEMU_PATH"
+    as_user chmod 755 "bin/$MKROOTFS_QEMU"
 fi
 
 # export environment for the distro
