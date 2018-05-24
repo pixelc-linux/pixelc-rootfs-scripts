@@ -35,6 +35,7 @@ stage_sublog "creating archive ${ROOTNAME}..."
 cd "${MKROOTFS_ROOT_DIR}" || die_log "could not enter root directory"
 
 tar cpJf "../../${ROOTNAME}" . || die_log "could not create rootfs archive"
+chown "${MKROOTFS_USER}:${MKROOTFS_GROUP}" "../../${ROOTNAME}"
 
 stage_sublog "created archive: ${ROOTNAME}"
 stage_sublog "cleaning up..."

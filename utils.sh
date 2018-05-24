@@ -81,14 +81,6 @@ remove_cleanup() {
     done
 }
 
-save_cleanup() {
-    echo "$MKROOTFS_CLEANUP_FUNCS"
-}
-
-restore_cleanup() {
-    MKROOTFS_CLEANUP_FUNCS="$1"
-}
-
 export MKROOTFS_BINFMT_NAME="mkrootfs-aarch64"
 export MKROOTFS_BINFMT_MAGIC="\x7fELF\x02\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\xb7"
 export MKROOTFS_BINFMT_MASK="\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff"
