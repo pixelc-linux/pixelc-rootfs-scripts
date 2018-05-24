@@ -140,6 +140,14 @@ fi
 # export environment for the distro
 
 export MKROOTFS_SCRIPT_DIR=""
+export MKROOTFS_ROOT_PASSWORD="pixelc"
+export MKROOTFS_ROOT_DIR="rootfs"
+export MKROOTFS_ENV_BIN="/usr/bin/env"
+
+export MKROOTFS_ENV_PATH="/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin"
+export MKROOTFS_ENV_TERM="$TERM"
+export MKROOTSF_ENV_HOME="/root"
+export MKROOTFS_ENV_SHELL="/bin/sh"
 
 . "./distros/${MKROOTFS_DISTRO}.sh"
 

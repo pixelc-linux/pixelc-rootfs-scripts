@@ -71,6 +71,16 @@ prepend_cleanup() {
     MKROOTFS_CLEANUP_FUNCS="$1;${MKROOTFS_CLEANUP_FUNCS}"
 }
 
+remove_cleanup() {
+    CLEANUP_TMP="$MKROOTFS_CLEANUP_FUNCS"
+    MKROOTFS_CLEANUP_FUNCS=""
+    for func in $(echo $CLEANUP_TMP | tr ';' ' '); do
+        if [ "$1" != "$func" ]; then
+            append_cleanup "$func"
+        fi
+    done
+}
+
 save_cleanup() {
     echo "$MKROOTFS_CLEANUP_FUNCS"
 }
@@ -150,5 +160,8 @@ make_rootfs() {
 }
 
 in_rootfs() {
-    chroot "$MKROOTFS_ROOT_DIR" "$@"
+    chroot "$MKROOTFS_ROOT_DIR" "$MKROOTFS_ENV_BIN" -i \
+        HOME="$MKROOTFS_ENV_HOME" TERM="$MKROOTFS_ENV_TERM" \
+        PATH="$MKROOTFS_ENV_PATH" SHELL="$MKROOTFS_ENV_SHELL" \
+        "$@"
 }

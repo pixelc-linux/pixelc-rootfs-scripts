@@ -16,7 +16,6 @@ stage_sublog "downloading packages..."
 cleanup_root() {
     rm -rf "$MKROOTFS_ROOT_DIR"
 }
-CLEANUP_OLD=$(save_cleanup)
 append_cleanup cleanup_root
 
 # stage 1: download stuff, no need to configure
@@ -40,4 +39,4 @@ stage_sublog "pre-configuring base (will partially fail)..."
 stage_sublog "cleaning up..."
 
 # keep the root dir
-restore_cleanup "$CLEANUP_OLD"
+remove_cleanup cleanup_root
