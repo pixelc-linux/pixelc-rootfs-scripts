@@ -13,11 +13,6 @@ cp -R xbps/var "$MKROOTFS_ROOT_DIR" || die_log "could not copy signing keys"
 
 stage_sublog "downloading packages..."
 
-cleanup_root() {
-    rm -rf "$MKROOTFS_ROOT_DIR"
-}
-append_cleanup cleanup_root
-
 # stage 1: download stuff, no need to configure
 XBPS_TARGET_ARCH="${MKROOTFS_VOID_ARCH}" ./xbps/usr/bin/xbps-install \
     -S -y -R "${MKROOTFS_VOID_REPO_URL}" -r "$MKROOTFS_ROOT_DIR" base-voidstrap
@@ -38,5 +33,4 @@ stage_sublog "pre-configuring base (will partially fail)..."
 
 stage_sublog "cleaning up..."
 
-# keep the root dir
-remove_cleanup cleanup_root
+exit 0

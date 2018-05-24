@@ -56,29 +56,31 @@ switch_dir() {
 }
 
 MKROOTFS_CLEANUP_FUNCS=""
+MKROOTFS_CLEANUP_ERROR_FUNCS=""
+cleanup_cb_error() {
+    for func in $(echo $MKROOTFS_CLEANUP_ERROR_FUNCS | tr ';' ' '); do
+        eval "$func"
+    done
+    exit $?
+}
 cleanup_cb() {
+    if [ $? -ne 0 ]; then
+        cleanup_cb_error
+    fi
     for func in $(echo $MKROOTFS_CLEANUP_FUNCS | tr ';' ' '); do
         eval "$func"
     done
+    exit 0
 }
-trap cleanup_cb EXIT INT QUIT ABRT TERM
+trap cleanup_cb EXIT
+trap cleanup_cb_error INT QUIT ABRT TERM
 
-append_cleanup() {
+add_cleanup_success() {
     MKROOTFS_CLEANUP_FUNCS="${MKROOTFS_CLEANUP_FUNCS};$1"
 }
 
-prepend_cleanup() {
-    MKROOTFS_CLEANUP_FUNCS="$1;${MKROOTFS_CLEANUP_FUNCS}"
-}
-
-remove_cleanup() {
-    CLEANUP_TMP="$MKROOTFS_CLEANUP_FUNCS"
-    MKROOTFS_CLEANUP_FUNCS=""
-    for func in $(echo $CLEANUP_TMP | tr ';' ' '); do
-        if [ "$1" != "$func" ]; then
-            append_cleanup "$func"
-        fi
-    done
+add_cleanup() {
+    MKROOTFS_CLEANUP_ERROR_FUNCS="${MKROOTFS_CLEANUP_ERROR_FUNCS};$1"
 }
 
 export MKROOTFS_BINFMT_NAME="mkrootfs-aarch64"
@@ -149,6 +151,11 @@ test_rootfs() {
 make_rootfs() {
     test ! -d "$MKROOTFS_ROOT_DIR" || die_log "root directory already exists"
     mkdir "$MKROOTFS_ROOT_DIR" || die_log "could not create root directory"
+    add_cleanup_error remove_rootfs
+}
+
+remove_rootfs() {
+    rm -rf "$MKROOTFS_ROOT_DIR" > /dev/null 2>&1
 }
 
 in_rootfs() {

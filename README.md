@@ -152,21 +152,14 @@ Fetches a file from `url` into `output` as an unprivileged user.
 
 Like above, but as root.
 
-#### append_cleanup func
+#### add_cleanup func
 
-Given a function name, this function will be called upon either error
-or regular exit. Meant to clean up any resources not meant to persist
-into the next stage.
+Given a function name, this function will be called upon error.
+Meant to clean up any resources not meant to persist into the next stage.
 
-#### prepend_cleanup func
+#### add_cleanup_success func
 
-Like `append_cleanup` but will be called first.
-
-#### remove_cleanup func
-
-Removes a cleanup function `func` from the list of functions to call. Use this
-if you want to run a function upon error but don't want it to run upon graceful
-exit.
+Same as above, but to be called on success.
 
 #### register_binfmt
 
@@ -212,7 +205,8 @@ does not.
 #### make_rootfs
 
 Use this to create the `rootfs` directory and error if it already exists
-or if it cannot be created.
+or if it cannot be created. It also defines a cleanup handler using
+`add_cleanup` that will remove the `rootfs` if the stage fails.
 
 #### in_rootfs command [...]
 
@@ -273,12 +267,6 @@ switch_dir
 
 # make the rootfs directory
 make_rootfs
-
-# clean up on error
-cleanup_root() {
-    rm -rf "$MKROOTFS_ROOT_DIR"
-}
-append_cleanup cleanup_root
 
 ##############################
 # fetch rootfs contents here #

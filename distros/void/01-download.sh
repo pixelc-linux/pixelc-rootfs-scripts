@@ -17,27 +17,24 @@ fetch_file "$XBPS_URL" "$XBPS_ARCHIVE" || \
 xbps_cleanup_archive() {
     rm -f "$XBPS_ARCHIVE"
 }
-append_cleanup xbps_cleanup_archive
+add_cleanup xbps_cleanup_archive
 
 stage_sublog "extracting xbps..."
 
 as_user rm -rf xbps || die_log "xbps directory cleanup failed"
 as_user mkdir xbps  || die_log "xbps directory creation failed"
 
-cd xbps
 xbps_cleanup_dir() {
-    cd ..
     rm -rf xbps
 }
-prepend_cleanup xbps_cleanup_dir
+add_cleanup xbps_cleanup_dir
 
-tar xf "../${XBPS_ARCHIVE}" || die_log "unpacking xbps failed"
+tar xf "${XBPS_ARCHIVE}" -C xbps || die_log "unpacking xbps failed"
 
-test -x "usr/bin/xbps-install.static" || die_log "invalid xbps contents"
+test -x "xbps/usr/bin/xbps-install.static" || die_log "invalid xbps contents"
 
 stage_sublog "cleaning up..."
 
-remove_cleanup xbps_cleanup_archive
 cd ..
 rm -f "$XBPS_ARCHIVE"
 
