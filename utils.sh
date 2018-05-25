@@ -58,10 +58,11 @@ switch_dir() {
 MKROOTFS_CLEANUP_FUNCS=""
 MKROOTFS_CLEANUP_ERROR_FUNCS=""
 cleanup_cb_error() {
+    EXITCODE=$?
     for func in $(echo $MKROOTFS_CLEANUP_ERROR_FUNCS | tr ';' ' '); do
         eval "$func"
     done
-    exit $?
+    exit $EXITCODE
 }
 cleanup_cb() {
     if [ $? -ne 0 ]; then
@@ -95,7 +96,8 @@ register_binfmt() {
         if [ ! -f "/proc/sys/fs/binfmt_misc/register" ]; then
             mount -t binfmt_misc none /proc/sys/fs/binfmt_misc || \
                 die_log "could not mount binfmt_misc"
-            append_cleanup unregister_binfmt
+            add_cleanup unregister_binfmt
+            add_cleanup_success unregister_binfmt
         fi
         if [ ! -f "/proc/sys/fs/binfmt_misc/${MKROOTFS_BINFMT_NAME}" ]; then
             echo ":${MKROOTFS_BINFMT_NAME}:M::${MKROOTFS_BINFMT_MAGIC}:${MKROOTFS_BINFMT_MASK}:/${MKROOTFS_QEMU}:" \
@@ -135,13 +137,14 @@ mount_pseudo() {
     mount --bind /dev "${MKROOTFS_ROOT_DIR}/dev"
     mount --bind /sys "${MKROOTFS_ROOT_DIR}/sys"
     mount --bind /proc "${MKROOTFS_ROOT_DIR}/proc"
-    append_cleanup umount_pseudo
+    add_cleanup umount_pseudo
+    add_cleanup_success umount_pseudo
 }
 
 umount_pseudo() {
-    umount "$1/dev" > /dev/null 2>&1
-    umount "$1/sys" > /dev/null 2>&1
-    umount "$1/proc" > /dev/null 2>&1
+    umount "${MKROOTFS_ROOT_DIR}/dev" > /dev/null 2>&1
+    umount "${MKROOTFS_ROOT_DIR}/sys" > /dev/null 2>&1
+    umount "${MKROOTFS_ROOT_DIR}/proc" > /dev/null 2>&1
 }
 
 test_rootfs() {
