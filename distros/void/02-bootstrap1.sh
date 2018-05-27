@@ -30,7 +30,3 @@ fi
 # note how it's run as host arch
 stage_sublog "pre-configuring base (will partially fail)..."
 ./xbps/usr/bin/xbps-reconfigure -r "$MKROOTFS_ROOT_DIR" base-files
-
-stage_sublog "cleaning up..."
-
-exit 0

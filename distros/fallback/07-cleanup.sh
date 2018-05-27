@@ -16,5 +16,3 @@ stage_log "cleaning up for ${MKROOTFS_DISTRO}..."
 rm -rf "${MKROOTFS_GENERATED}"
 
 run_hook cleanup
-
-stage_sublog "done."

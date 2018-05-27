@@ -13,5 +13,3 @@ prepare_net
 in_rootfs "$MKROOTFS_ENV_SHELL" -i
 
 run_hook shell
-
-stage_sublog "cleaning up..."

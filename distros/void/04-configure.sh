@@ -18,5 +18,3 @@ fi
 
 echo "root:${MKROOTFS_ROOT_PASSWORD}" | in_rootfs chpasswd -c SHA512
 test $? -eq 0 || die_log "setting password failed"
-
-stage_sublog "cleaning up..."

@@ -33,8 +33,6 @@ tar xf "${XBPS_ARCHIVE}" -C xbps || die_log "unpacking xbps failed"
 
 test -x "xbps/usr/bin/xbps-install.static" || die_log "invalid xbps contents"
 
-stage_sublog "cleaning up..."
-
 cd ..
 rm -f "$XBPS_ARCHIVE"
 

@@ -73,6 +73,7 @@ cleanup_cb_error() {
     if [ $# -gt 0 ]; then
         EXITCODE=$1
     fi
+    stage_log "cleaning up after error..."
     for func in $(echo $MKROOTFS_CLEANUP_ERROR_FUNCS | tr ';' ' '); do
         eval "$func"
     done
@@ -83,6 +84,7 @@ cleanup_cb() {
     if [ $EXITCODE -ne 0 ]; then
         cleanup_cb_error $EXITCODE
     fi
+    stage_log "cleaning up after success..."
     for func in $(echo $MKROOTFS_CLEANUP_FUNCS | tr ';' ' '); do
         eval "$func"
     done
