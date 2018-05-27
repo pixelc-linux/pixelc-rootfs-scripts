@@ -43,12 +43,23 @@ die_log() {
     fi
 }
 
+silent() {
+    "$@" > /dev/null 2>&1
+}
+
 fetch_file() {
     as_user wget "$1" -O "$2"
 }
 
 fetch_file_root() {
     wget "$1" -O "$2"
+}
+
+run_hook() {
+    silent type "mkrootfs_${1}_hook"
+    if [ $? -eq 0 ]; then
+        "mkrootfs_${1}_hook"
+    fi
 }
 
 switch_dir() {
@@ -146,13 +157,13 @@ mount_pseudo() {
 }
 
 umount_pseudo() {
-    umount "${MKROOTFS_ROOT_DIR}/dev" > /dev/null 2>&1
-    umount "${MKROOTFS_ROOT_DIR}/sys" > /dev/null 2>&1
-    umount "${MKROOTFS_ROOT_DIR}/proc" > /dev/null 2>&1
+    silent umount "${MKROOTFS_ROOT_DIR}/dev"
+    silent umount "${MKROOTFS_ROOT_DIR}/sys"
+    silent umount "${MKROOTFS_ROOT_DIR}/proc"
 }
 
 prepare_net() {
-    cp /etc/resolv.conf "${MKROOTFS_ROOT_DIR}/etc" > /dev/null 2>&1
+    silent cp /etc/resolv.conf "${MKROOTFS_ROOT_DIR}/etc"
     if [ $? -eq 0 ]; then
         add_cleanup unprepare_net
         add_cleanup_success unprepare_net
@@ -176,7 +187,7 @@ make_rootfs() {
 }
 
 remove_rootfs() {
-    rm -rf "$MKROOTFS_ROOT_DIR" > /dev/null 2>&1
+    silent rm -rf "$MKROOTFS_ROOT_DIR"
 }
 
 in_rootfs() {
@@ -184,4 +195,24 @@ in_rootfs() {
         HOME="$MKROOTFS_ENV_HOME" TERM="$MKROOTFS_ENV_TERM" \
         PATH="$MKROOTFS_ENV_PATH" SHELL="$MKROOTFS_ENV_SHELL" \
         "$@"
+}
+
+archive_rootfs() {
+    ROOTBASE="${MKROOTFS_DISTRO}-$(date '+%Y%m%d')"
+    ROOTEXT="tar.xz"
+    TARARGS="cpJf"
+    if [ -f "../${ROOTBASE}.${ROOTEXT}" ]; then
+        I=2
+        while [ -f "../${ROOTBASE}_${I}.${ROOTEXT}"]; do
+            I=$(($I + 1))
+        done
+        ROOTBASE="${ROOTBASE}_${I}"
+    fi
+    ROOTNAME="${ROOTBASE}.${ROOTEXT}"
+    stage_sublog "creating archive ${ROOTNAME}..."
+    cd "${MKROOTFS_ROOT_DIR}" || die_log "could not enter root directory"
+    tar "$TARARGS" "../../${ROOTNAME}" . || \
+        die_log "could not create rootfs archive"
+    chown "${MKROOTFS_USER}:${MKROOTFS_GROUP}" "../../${ROOTNAME}"
+    stage_sublog "created archive: ${ROOTNAME}"
 }

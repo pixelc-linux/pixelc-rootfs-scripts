@@ -59,14 +59,14 @@ if [ "$MKROOTFS_USER" == "root" ]; then
     exit 1
 fi
 
-id "$MKROOTFS_USER" > /dev/null 2>&1
+silent id "$MKROOTFS_USER"
 if [ $? -ne 0 ]; then
     error_log "unprivileged user does not exist"
     help
     exit 1
 fi
 
-getent group "$MKROOTFS_GROUP" > /dev/null 2>&1
+silent getent group "$MKROOTFS_GROUP"
 if [ $? -ne 0 ]; then
     error_log "group does not exist"
     help

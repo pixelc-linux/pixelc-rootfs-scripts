@@ -12,9 +12,6 @@ mount_pseudo
 prepare_net
 in_rootfs "$MKROOTFS_ENV_SHELL" -i
 
-type mkrootfs_shell_hook > /dev/null 2>&1
-if [ $? -eq 0 ]; then
-    mkrootfs_shell_hook
-fi
+run_hook shell
 
 stage_sublog "cleaning up..."

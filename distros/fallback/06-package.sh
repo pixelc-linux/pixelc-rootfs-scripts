@@ -24,19 +24,6 @@ mkdir -p "${MKROOTFS_ROOT_DIR}/var/log"
 mkdir -p "${MKROOTFS_ROOT_DIR}/var/tmp"
 mkdir -p "${MKROOTFS_ROOT_DIR}/tmp"
 
-type mkrootfs_package_hook > /dev/null 2>&1
-if [ $? -eq 0 ]; then
-    mkrootfs_package_hook
-fi
+run_hook package
 
-ROOTNAME="${MKROOTFS_DISTRO}-$(date '+%Y%m%d').tar.xz"
-
-stage_sublog "creating archive ${ROOTNAME}..."
-
-cd "${MKROOTFS_ROOT_DIR}" || die_log "could not enter root directory"
-
-tar cpJf "../../${ROOTNAME}" . || die_log "could not create rootfs archive"
-chown "${MKROOTFS_USER}:${MKROOTFS_GROUP}" "../../${ROOTNAME}"
-
-stage_sublog "created archive: ${ROOTNAME}"
-stage_sublog "cleaning up..."
+archive_rootfs
