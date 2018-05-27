@@ -215,7 +215,7 @@ if [ -z "$MKROOTFS_STAGE" ]; then
     if [ -n "$MKROOTFS_SHELL" ]; then
         run_stage "05-shell" "04-configure" "root"
     fi
-    run_stage "06-package"    "04-configure"  "$MKROOTFS_USER"
+    run_stage "06-package"    "04-configure"  "root"
     run_stage "07-cleanup"    "04-configure"  "root"
     exit 0
 fi
