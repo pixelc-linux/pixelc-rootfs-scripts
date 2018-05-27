@@ -8,6 +8,7 @@ switch_dir
 # just in case
 umount_pseudo
 unprepare_binfmt
+unprepare_net
 
 cd "$PREVPATH"
 

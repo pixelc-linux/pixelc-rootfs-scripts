@@ -199,6 +199,17 @@ upon cleanup when the above is called. It is also good to call as a part of
 the packaging process, just to make sure, in case a `shell` stage didn't
 automatically unmount it.
 
+#### prepare_net
+
+Makes sure the rootfs contains a `resolv.conf` for network access inside the
+chroot. Automatically cleans up using `unprepare_net` at the end, so you do
+not need to call it manually.
+
+#### unprepare_net
+
+Cleans up `resolv.conf` left by `prepare_net`; typically called automatically
+but it's good to make sure in packaging stage anyway.
+
 #### test_rootfs
 
 Use this to test whether a `rootfs` directory exists. It will error if it
@@ -334,6 +345,7 @@ switch_dir
 test_rootfs
 register_binfmt
 mount_pseudo
+prepare_net
 
 ################################
 # perform stuff in chroot here #
@@ -358,7 +370,7 @@ override this to do e.g. custom cleanups.
 
 The default version does roughly this:
 
-1) `test_rootfs`, `umount_pseudo`, `unprepare_binfmt`
+1) `test_rootfs`, `umount_pseudo`, `unprepare_binfmt`, `unprepare_net`
 2) flush `/var/cache`, `/var/log`, `/var/tmp` and `/tmp`
 3) compress into `my-distro-YYYYMMDD.tar.xz`, preserving permissions
 4) change ownership of the resulting archive to the unprivileged user/group

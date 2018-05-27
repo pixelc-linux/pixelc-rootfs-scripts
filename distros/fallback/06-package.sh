@@ -10,6 +10,7 @@ test_rootfs
 # just in case
 umount_pseudo
 unprepare_binfmt
+unprepare_net
 
 stage_sublog "Flushing caches and temporary directories..."
 

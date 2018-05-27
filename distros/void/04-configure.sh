@@ -9,6 +9,7 @@ stage_log "configuring rootfs..."
 test_rootfs
 register_binfmt
 mount_pseudo
+prepare_net
 
 stage_sublog "Setting default password..."
 if [ ! -f "${MKROOTFS_ROOT_DIR}/etc/shadow" ]; then

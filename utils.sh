@@ -151,6 +151,18 @@ umount_pseudo() {
     umount "${MKROOTFS_ROOT_DIR}/proc" > /dev/null 2>&1
 }
 
+prepare_net() {
+    cp /etc/resolv.conf "${MKROOTFS_ROOT_DIR}/etc" > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        add_cleanup unprepare_net
+        add_cleanup_success unprepare_net
+    fi
+}
+
+unprepare_net() {
+    rm -f "${MKROOTFS_ROOT_DIR}/etc/resolv.conf"
+}
+
 test_rootfs() {
     test -d "$MKROOTFS_ROOT_DIR" || die_log "root directory does not exist"
 }
