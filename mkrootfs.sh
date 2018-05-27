@@ -146,7 +146,7 @@ export MKROOTFS_ENV_BIN="/usr/bin/env"
 
 export MKROOTFS_ENV_PATH="/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin"
 export MKROOTFS_ENV_TERM="$TERM"
-export MKROOTSF_ENV_HOME="/root"
+export MKROOTFS_ENV_HOME="/root"
 export MKROOTFS_ENV_SHELL="/bin/sh"
 
 . "./distros/${MKROOTFS_DISTRO}.sh"
