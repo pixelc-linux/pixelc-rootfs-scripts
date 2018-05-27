@@ -142,6 +142,7 @@ fi
 export MKROOTFS_SCRIPT_DIR=""
 export MKROOTFS_ROOT_PASSWORD="pixelc"
 export MKROOTFS_ROOT_DIR="rootfs"
+export MKROOTFS_ROOT_GID="0"
 export MKROOTFS_ENV_BIN="/usr/bin/env"
 
 export MKROOTFS_ENV_PATH="/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin"

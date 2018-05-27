@@ -170,6 +170,8 @@ test_rootfs() {
 make_rootfs() {
     test ! -d "$MKROOTFS_ROOT_DIR" || die_log "root directory already exists"
     mkdir "$MKROOTFS_ROOT_DIR" || die_log "could not create root directory"
+    chgrp "$MKROOTFS_ROOT_GID" "$MKROOTFS_ROOT_DIR" || \
+        die_log "could not set root directory permissions"
     add_cleanup_error remove_rootfs
 }
 

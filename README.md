@@ -86,6 +86,13 @@ The following variables are optional:
 - `MKROOTFS_ROOT_DIR` - the directory in `generated/my-distro` where the
   unpacked rootfs resides before packaging, by default `rootfs`, you should
   not have any reason to change this
+- `MKROOTFS_ROOT_GID` - the group name or group ID (the latter is portable
+  as it does not depend on what is available in the running system) of the
+  rootfs files; by default this is `0`. This will be the correct value for
+  most distros but you can change it if necessary. The root directory made
+  by `make_rootfs` will be owned by this group, so any files inside should
+  inherit that correctly, but if they do not, it's up to the distro scripts
+  to make sure they do.
 - `MKROOTFS_ENV_BIN` - the path to the `env` binary in the resulting rootfs,
   needed for environment setting and command invocation; by default this is
   `/usr/bin/env` which will match vast majority of distros but may not always
@@ -217,9 +224,12 @@ does not.
 
 #### make_rootfs
 
-Use this to create the `rootfs` directory and error if it already exists
-or if it cannot be created. It also defines a cleanup handler using
-`add_cleanup` that will remove the `rootfs` if the stage fails.
+Use this to create the `rootfs` directory and error if it already exists,
+if it cannot be created or if the permissions cannot be set. It also defines
+a cleanup handler using `add_cleanup` that will remove the `rootfs` if the
+stage fails. The resulting root directory will be owned by `MKROOTFS_ROOT_GID`
+and that alone should be enough for most distro scripts to result in proper
+permissions all across the rootfs.
 
 #### in_rootfs command [...]
 
