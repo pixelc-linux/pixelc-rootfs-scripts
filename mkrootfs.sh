@@ -1,5 +1,7 @@
 #!/bin/sh
 
+export MKROOTFS_NO_COLOR
+
 # include utils
 . ./utils.sh
 test "$(whoami)" = "root" || die_log "must be run as root"
@@ -22,7 +24,7 @@ QEMU_STATIC_DEB="qemu-user-static_2.12+dfsg-1+b1_${MKROOTFS_CURRENT_ARCH}.deb"
 QEMU_STATIC_DEB_URL="http://ftp.debian.org/debian/pool/main/q/qemu/${QEMU_STATIC_DEB}"
 
 help() {
-    echo "${COLOR_BOLD_WHITE}Usage: $0 [arguments]${COLOR_RESET}"
+    echo "Usage: $0 [arguments]"
     echo "Available options:"
     echo "  -h print this message"
     echo "  -d DISTRO  the distro to generate"
@@ -30,18 +32,20 @@ help() {
     echo "  -g GROUP   the group"
     echo "  -s STAGE   the stage to run"
     echo "  -S         enter shell after configure stage"
+    echo "  -C         do not use color output"
     echo ""
     echo "Group is used for ownership of the final tarball."
     echo "If you specify stage, only that stage will be run."
 }
 
-while getopts d:u:g:s:Sh OPT; do
+while getopts d:u:g:s:SCh OPT; do
     case $OPT in
         d) export MKROOTFS_DISTRO=$OPTARG ;;
         u) export MKROOTFS_USER=$OPTARG ;;
         g) export MKROOTFS_GROUP=$OPTARG ;;
         s) MKROOTFS_STAGE=$OPTARG ;;
         S) MKROOTFS_SHELL=1 ;;
+        C) export MKROOTFS_NO_COLOR=1 ;;
         h) help; exit 0 ;;
         \?)
             echo "Unrecognized option: $OPTARG"
@@ -187,7 +191,7 @@ run_stage() {
         SCRIPT="./distros/fallback/${STAGE}.sh"
     fi
     export MKROOTFS_STAGE="$STAGE"
-    echo "${COLOR_BOLD_GREEN}Running stage '${STAGE}' (${SCRIPT})...${COLOR_RESET}"
+    prestage_log "Running stage '${STAGE}' (${SCRIPT})..."
     if [ "$USER" = "root" ]; then
         "${SCRIPT}"
     else
@@ -196,7 +200,7 @@ run_stage() {
     if [ $? -ne 0 ]; then
         die_log "stage '$(echo $STAGE | sed 's/..\-//')' failed" $?
     fi
-    echo "${COLOR_BOLD_GREEN}Stage '${STAGE}' succeeded.${COLOR_RESET}"
+    poststage_log "Stage '${STAGE}' succeeded."
     # only stages <= configure are ever "done"
     if [ "$(echo $STAGE | cut -d - -f 1)" -le "04" ]; then
         echo "$STAGE" | \

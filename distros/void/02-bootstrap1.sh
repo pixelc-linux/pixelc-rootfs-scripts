@@ -15,8 +15,9 @@ stage_sublog "downloading packages..."
 
 # stage 1: download stuff, no need to configure
 XBPS_TARGET_ARCH="${MKROOTFS_VOID_ARCH}" ./xbps/usr/bin/xbps-install \
-    -S -y -R "${MKROOTFS_VOID_REPO_URL}" -r "$MKROOTFS_ROOT_DIR" base-voidstrap
-test $? -eq 0 || die_log "initial bootstrap failed"
+    -S -y -R "${MKROOTFS_VOID_REPO_URL}" \
+    -r "$MKROOTFS_ROOT_DIR" base-voidstrap ||
+        die_log "initial bootstrap failed"
 
 # glibc needs locale configured to work correctly
 if [ -e "${MKROOTFS_ROOT_DIR}/etc/default/libc-locales" ]; then

@@ -12,7 +12,7 @@ umount_pseudo
 unprepare_binfmt
 unprepare_net
 
-stage_sublog "Flushing caches and temporary directories..."
+stage_sublog "flushing caches and temporary directories..."
 
 rm -rf "${MKROOTFS_ROOT_DIR}/var/cache"
 rm -rf "${MKROOTFS_ROOT_DIR}/var/log"

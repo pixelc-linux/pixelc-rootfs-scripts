@@ -22,16 +22,40 @@ COLOR_BOLD_GREEN="\033[1;32m"
 COLOR_BOLD_RED="\033[1;31m"
 COLOR_RESET="\033[0m"
 
+prestage_log() {
+    if [ -z "$MKROOTFS_NO_COLOR" ]; then
+        echo "${COLOR_BOLD_GREEN}$@${COLOR_RESET}"
+    else
+        echo "$@"
+    fi
+}
+
+poststage_log() {
+    prestage_log "$@"
+}
+
 stage_log() {
-    echo "${COLOR_BOLD_WHITE}${MKROOTFS_STAGE}:${COLOR_RESET} $@"
+    if [ -z "$MKROOTFS_NO_COLOR" ]; then
+        echo "${COLOR_BOLD_WHITE}${MKROOTFS_STAGE}:${COLOR_RESET} $@"
+    else
+        echo "${MKROOTFS_STAGE}: $@"
+    fi
 }
 
 stage_sublog() {
-    echo "${COLOR_BOLD_WHITE}-->${COLOR_RESET} $@"
+    if [ -z "$MKROOTFS_NO_COLOR" ]; then
+        echo "${COLOR_BOLD_WHITE}-->${COLOR_RESET} $@"
+    else
+        echo "--> $@"
+    fi
 }
 
 error_log() {
-    echo "${COLOR_BOLD_RED}ERROR:${COLOR_RESET} $@, exitting..."
+    if [ -z "$MKROOTFS_NO_COLOR" ]; then
+        echo "${COLOR_BOLD_RED}ERROR:${COLOR_RESET} $@, exitting..."
+    else
+        echo "ERROR: $@, exitting..."
+    fi
 }
 
 die_log() {
@@ -73,6 +97,7 @@ cleanup_cb_error() {
     if [ $# -gt 0 ]; then
         EXITCODE=$1
     fi
+    trap - EXIT INT QUIT ABRT TERM
     stage_log "cleaning up after error..."
     for func in $(echo $MKROOTFS_CLEANUP_ERROR_FUNCS | tr ';' ' '); do
         eval "$func"
@@ -84,6 +109,7 @@ cleanup_cb() {
     if [ $EXITCODE -ne 0 ]; then
         cleanup_cb_error $EXITCODE
     fi
+    trap - EXIT INT QUIT ABRT TERM
     stage_log "cleaning up after success..."
     for func in $(echo $MKROOTFS_CLEANUP_FUNCS | tr ';' ' '); do
         eval "$func"
@@ -185,7 +211,7 @@ make_rootfs() {
     mkdir "$MKROOTFS_ROOT_DIR" || die_log "could not create root directory"
     chgrp "$MKROOTFS_ROOT_GID" "$MKROOTFS_ROOT_DIR" || \
         die_log "could not set root directory permissions"
-    add_cleanup_error remove_rootfs
+    add_cleanup remove_rootfs
 }
 
 remove_rootfs() {
