@@ -231,7 +231,7 @@ case "$MKROOTFS_STAGE" in
     shell)
         run_stage "05-shell" "04-configure" "root" ;;
     package)
-        run_stage "06-package" "04-configure" "$MKROOTFS_USER" ;;
+        run_stage "06-package" "04-configure" "root" ;;
     cleanup)
         run_stage "07-cleanup" "04-configure" "root" ;;
     *)

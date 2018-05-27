@@ -24,8 +24,10 @@ A rootfs generation process consists of the following stages:
 5) **Shell** - run as **root** and only executed **upon request**, you
    can also gain a shell environment inside the configured rootfs for manual
    tinkering
-6) **Packaging** - run as **user**, takes care of generating the rootfs
-   archive
+6) **Packaging** - run as **root**, takes care of generating the rootfs
+   archive; the reason it has to run as root is to perform cleanup in the
+   rootfs as well as be able to package files that are only root-readable
+   into the final archive
 7) **Cleanup** - run as **root**, removes the unpackaged rootfs and any
    downloaded files; this must be run as root because the rootfs files are
    owned by root and cannot be otherwise directly manipulated
