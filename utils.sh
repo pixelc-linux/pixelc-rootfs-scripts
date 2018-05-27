@@ -59,14 +59,18 @@ MKROOTFS_CLEANUP_FUNCS=""
 MKROOTFS_CLEANUP_ERROR_FUNCS=""
 cleanup_cb_error() {
     EXITCODE=$?
+    if [ $# -gt 0 ]; then
+        EXITCODE=$1
+    fi
     for func in $(echo $MKROOTFS_CLEANUP_ERROR_FUNCS | tr ';' ' '); do
         eval "$func"
     done
     exit $EXITCODE
 }
 cleanup_cb() {
-    if [ $? -ne 0 ]; then
-        cleanup_cb_error
+    EXITCODE=$?
+    if [ $EXITCODE -ne 0 ]; then
+        cleanup_cb_error $EXITCODE
     fi
     for func in $(echo $MKROOTFS_CLEANUP_FUNCS | tr ';' ' '); do
         eval "$func"
