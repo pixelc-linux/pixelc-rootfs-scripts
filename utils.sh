@@ -24,7 +24,7 @@ COLOR_RESET="\033[0m"
 
 prestage_log() {
     if [ -z "$MKROOTFS_NO_COLOR" ]; then
-        echo -e "${COLOR_BOLD_GREEN}$@${COLOR_RESET}"
+        printf "${COLOR_BOLD_GREEN}$@${COLOR_RESET}"
     else
         echo "$@"
     fi
