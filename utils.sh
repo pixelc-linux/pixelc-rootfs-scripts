@@ -24,7 +24,7 @@ COLOR_RESET="\033[0m"
 
 prestage_log() {
     if [ -z "$MKROOTFS_NO_COLOR" ]; then
-        printf "${COLOR_BOLD_GREEN}$@${COLOR_RESET}\n"
+        printf "${COLOR_BOLD_GREEN}%s${COLOR_RESET}\n" "$@"
     else
         echo "$@"
     fi
@@ -36,7 +36,7 @@ poststage_log() {
 
 stage_log() {
     if [ -z "$MKROOTFS_NO_COLOR" ]; then
-        printf "${COLOR_BOLD_WHITE}${MKROOTFS_STAGE}:${COLOR_RESET} $@\n"
+        printf "${COLOR_BOLD_WHITE}${MKROOTFS_STAGE}:${COLOR_RESET} %s\n" "$@"
     else
         echo "${MKROOTFS_STAGE}: $@"
     fi
@@ -44,7 +44,7 @@ stage_log() {
 
 stage_sublog() {
     if [ -z "$MKROOTFS_NO_COLOR" ]; then
-        printf "${COLOR_BOLD_WHITE}-->${COLOR_RESET} $@\n"
+        printf "${COLOR_BOLD_WHITE}-->${COLOR_RESET} %s\n" "$@"
     else
         echo "--> $@"
     fi
@@ -52,7 +52,7 @@ stage_sublog() {
 
 error_log() {
     if [ -z "$MKROOTFS_NO_COLOR" ]; then
-        printf "${COLOR_BOLD_RED}ERROR:${COLOR_RESET} $@, exitting...\n"
+        printf "${COLOR_BOLD_RED}ERROR:${COLOR_RESET} %s, exitting...\n" "$@"
     else
         echo "ERROR: $@, exitting..."
     fi
