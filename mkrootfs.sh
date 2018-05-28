@@ -1,6 +1,10 @@
 #!/bin/sh
 
-export MKROOTFS_NO_COLOR
+if [ -z "$MKROOTFS_NO_COLOR" ]; then
+    export MKROOTFS_NO_COLOR=
+else
+    export MKROOTFS_NO_COLOR
+fi
 
 # include utils
 . ./utils.sh
