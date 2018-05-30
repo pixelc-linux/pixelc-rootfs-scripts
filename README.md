@@ -38,6 +38,35 @@ where it left off after figuring out the problem by running the script
 again. You can also explicitly request a stage if you wish to run the
 process manually.
 
+## Running
+
+You generally need to specify 3 parameters, the distro being one and the user
+and group being the other. Any other parameters are optional and can be found
+by passing `-h`.
+
+```
+./mkrootfs.sh -d void-musl -u youruser -g yourgroup
+```
+
+The script needs to be run as root. If you don't run it as root, it will not
+do anything. The script does its own checks.
+
+You can invoke each stage on its own by passing `-s`. This is useful if some
+stage fails and you've fixed the problem. To for example do the packaging
+stage. simply run
+
+```
+./mkrootfs.sh -d mydistro -u youruser -g yourgroup -s package
+```
+
+The script automatically makes sure the dependencies are met, so it will
+not let you run an incorrect stage.
+
+You can also run the entire process with a custom shell run just before
+packaging by passing `-S`. This is useful if you want to do some specific
+customization in your rootfs before packaging it. Don't forget to clean up
+things the scripts wouldn't.
+
 ## Creating a distro template and scripts
 
 When writing distribution support for the rootfs generator, two things are
