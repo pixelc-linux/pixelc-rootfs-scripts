@@ -7,6 +7,11 @@ else
     export MKROOTFS_NO_COLOR
 fi
 
+# redirected stdout, no color stuff
+if [ ! -t 1 ]; then
+    export MKROOTFS_NO_COLOR=1
+fi
+
 # include utils
 . ./utils.sh
 test "$(whoami)" = "root" || die_log "must be run as root"
