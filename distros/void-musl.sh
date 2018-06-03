@@ -1,6 +1,7 @@
 #!/bin/sh
-# config template for Void Linux (musl variant)
+# config template for Void Linux (musl)
 
-export MKROOTFS_SCRIPT_DIR="void"
-export MKROOTFS_VOID_REPO_URL="http://repo.voidlinux.eu/current/aarch64"
+# inherited from glibc config
+. ./distros/void-glibc.sh
+
 export MKROOTFS_VOID_ARCH="aarch64-musl"
