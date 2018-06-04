@@ -236,7 +236,7 @@ fi
 
 case "$MKROOTFS_STAGE" in
     download)
-        run_stage "01-download" "" "$MKROOTFS_USER";;
+        run_stage "01-download" "" "$MKROOTFS_USER" ;;
     bootstrap1)
         run_stage "02-bootstrap1" "01-download" "root" ;;
     bootstrap2)
