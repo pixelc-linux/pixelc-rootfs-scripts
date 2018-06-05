@@ -65,6 +65,10 @@ while getopts d:u:g:s:SCh OPT; do
     esac
 done
 
+if [ $MKROOTFS_NO_COLOR -eq 0 ]; then
+    export MKROOTFS_NO_COLOR=
+fi
+
 # sanitize beforehand
 
 if [ "$MKROOTFS_USER" == "root" ]; then
