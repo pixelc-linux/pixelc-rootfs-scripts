@@ -155,6 +155,11 @@ functions are provided.
 
 Runs a command, but as an unprivileged user rather than as root.
 
+#### run_hook name
+
+Executes a function called `mkrootfs_[name]_hook` but only if it exists. No
+parameters are passed to this function.
+
 #### switch_dir
 
 Switches into the `generated/my-distro` directory. Should be called after
@@ -181,6 +186,10 @@ Logs into standard output in format `ERROR: ..., exitting...
 #### die_log message [error_code]
 
 Calls `error_log` with `message` and exits with either `1` or `error_code`.
+
+#### silent [...]
+
+Like running a command, but all output is silenced.
 
 #### fetch_file url output
 
