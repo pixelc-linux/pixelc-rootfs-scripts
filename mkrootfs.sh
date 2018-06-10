@@ -202,7 +202,7 @@ run_stage() {
         check_stage "$STAGE" "$PREVSTAGE"
     fi
     if [ ! -f "$SCRIPT" ]; then
-        SCRIPT="./distros/fallback/${STAGE}.sh"
+        SCRIPT="./default/${STAGE}.sh"
     fi
     export MKROOTFS_STAGE="$STAGE"
     prestage_log "Running stage '${STAGE}' (${SCRIPT})..."

@@ -92,8 +92,8 @@ The scripts set can contain the following scripts:
 
 Only `bootstrap1`, `bootstrap2` and `configure` are mandatory; these need to
 be written separately for each distribution. The others can be supplied from
-the `fallback` directory. This directory provides fallback scripts for when
-they're not written; the mandatory ones have fallbacks that exit with failure,
+the `default` directory. This directory provides default scripts for when
+they're not written; the mandatory ones have defaults that exit with failure,
 the optional ones have reasonable default behavior, with the exception of the
 `download` stage, which simply does nothing by default.
 
@@ -291,8 +291,8 @@ everything is being generated, which is important for proper function of
 all of the utility library.
 
 You can also extend default scripts easily by using hooks. That means you can
-create a scripts that will define a hook function and include the fallback
-script; the fallback script will execute the hook at the specified point.
+create a scripts that will define a hook function and include the default
+script; the default script will execute the hook at the specified point.
 Example:
 
 ```
@@ -301,7 +301,7 @@ Example:
 necessary_hook() {
     # do stuff
 }
-. ./distros/fallback/NN-whatever.sh
+. ./default/NN-whatever.sh
 ```
 
 #### 01-download.sh
@@ -405,7 +405,7 @@ No hook functionality is provided, because it must be specified per-distro.
 #### 05-shell.sh
 
 You shouldn't need to override this, as there is a functional default version
-already provided out of box in the `fallback` directory. IF you happen to need
+already provided out of box in the `default` directory. IF you happen to need
 to change something, copy it into your distro and modify.
 
 You can do that using a hook. The `mkrootfs_shell_hook` function is invoked
@@ -413,7 +413,7 @@ after the `chroot` exits, if it exists.
 
 #### 06-package.sh
 
-There is a default version in `fallback`. Chances are you will want to actually
+There is a default version in `default`. Chances are you will want to actually
 override this to do e.g. custom cleanups.
 
 The default version does roughly this:
